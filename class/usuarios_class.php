@@ -104,13 +104,13 @@ class Usuarios
         return $resultado;
     }
 
-    public function  ColumnasPorRol(){
+    public function  ColumnasPorRol($idModulo){
         $resultado = array();
         $resultado['exitoso'] = true;
         try {            
             $obj_conecion = new ConexionPDO('mysql');
             //$parameter=[$this->getIdModulo()];
-            $parameter=[2];
+            $parameter=[$idModulo];
             $query = "call sicc.sp_getModulosColumnas(?);"; 
                    
             $result = $obj_conecion->ejecutarSentenciaPreparada($query,$parameter);

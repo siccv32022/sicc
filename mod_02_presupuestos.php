@@ -5,14 +5,14 @@ if (ISSET($_SESSION['rol']) != null) {
     include("class/usuarios_class.php");
     include("class/presupuestos_class.php");
 
-    $idModulo = 2;
+    $idModulo = $_GET['id'];
     $ModulosPorUsuario = new Usuarios();
     $ModulosPorUsuario->setIdRol($_SESSION['id_rol']);
     $ModulosUsuario = $ModulosPorUsuario->ModulosPorRol();
 
     $ColumnasModulosPorUsuario = new Usuarios();
     $ColumnasModulosPorUsuario->setIdModulo($idModulo);
-    $ColumnasModulosUsuario = $ModulosPorUsuario->ColumnasPorRol();
+    $ColumnasModulosUsuario = $ModulosPorUsuario->ColumnasPorRol( $idModulo);
 
     $Usuarios = new Usuarios();
     $UsuarioFull = $Usuarios->ObtenerUsuarios();
@@ -20,7 +20,51 @@ if (ISSET($_SESSION['rol']) != null) {
     $Presupuestos = new Presupuestos();
     $PresupuestosFull = $Presupuestos->getPresupuestos();
 
-    // var_dump($ColumnasModulosUsuario);
+    switch ($idModulo) {
+        case 2:
+            $PresupuestosFull = $Presupuestos->getPresupuestos();
+            break;
+        case 3:
+            $PresupuestosFull = $Presupuestos->getPedidos();
+            break;
+        case 4:
+            $PresupuestosFull = $Presupuestos->getNotaEntregas();
+             break;
+        case 6:
+            $PresupuestosFull = $Presupuestos->getInventario();
+            break;
+        case 7:
+            $PresupuestosFull = $Presupuestos->getInventario();
+            break;
+        case 9:
+            $PresupuestosFull = $Presupuestos->getEntradas();
+             break;
+        case 10:
+            $PresupuestosFull = $Presupuestos->getOfertaCompras();
+            break;
+        case 11:
+            $PresupuestosFull = $Presupuestos->getOfertaCompras();
+            break;
+        case 12:
+            $PresupuestosFull = $Presupuestos->getImportaciones();
+            break;
+        case 13:
+            $PresupuestosFull = $Presupuestos->getImportaciones();
+            break;
+        case 14:
+            $PresupuestosFull = $Presupuestos->getVentas();
+            break;
+        case 15:
+            $PresupuestosFull = $Presupuestos->getVentas();
+             break;
+        case 16:
+            $PresupuestosFull = $Presupuestos->getPagos();
+            break;
+        case 17:
+            $PresupuestosFull = $Presupuestos->getTaller();
+            break;
+        
+    }
     ?>
 
     <div style="float:left;">
@@ -88,11 +132,27 @@ if (ISSET($_SESSION['rol']) != null) {
                                         }
                                         else 
                                         {
-                                            echo $rowSQL[$nombreColumna];
+                                            if(isset($row['esAdjunto']) && $row['esAdjunto'] == '1' and $rowSQL[$nombreColumna]!= null)
+                                            {
+                                                $XML = simplexml_load_string($rowSQL[$nombreColumna], "SimpleXMLElement", LIBXML_NOCDATA);
+                                                $json = json_encode($XML);
+                                                $arr = json_decode($json,TRUE);
+
+                                                foreach ($arr["@attributes"] as $adjunto) {
+                                                    echo "<a href='http://192.168.1.168/adjuntos/".$adjunto."' target='_blank' rel='noopener noreferrer'>".$adjunto."</a> ";
+                                                }
+                                            }
+                                            else
+                                            {
+                                                echo $rowSQL[$nombreColumna];
+                                            }
+                                            
                                         }
                                          if (isset($row['concat']) && $row['format_text'] != '' && ($rowSQL[$nombreColumna]!= null ||$rowSQL[$nombreColumna] != '') )echo $row['concat'];
                                         ?>      
                                         
+
+                                      
                                     </td>
                                     <?php
                                 }
@@ -102,7 +162,7 @@ if (ISSET($_SESSION['rol']) != null) {
                         <?php
                     }
                 } else {
-                    echo 'Sin informacionen pedidos';
+                    echo 'Sin información';
                 }
                 ?>
 
