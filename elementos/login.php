@@ -4,7 +4,7 @@ if(trim($_POST["usuario"]) != "" && trim($_POST["password"]) != "")
     include("../class/conn.php");
     include("../class/usuarios_class.php");
 
-    if (isset($ldap['bind']) || true){
+    if (isset($ldap) || true){
    //session_destroy();
    session_start();
    //session_cache_limiter('nocache,private');    
@@ -31,7 +31,6 @@ if(trim($_POST["usuario"]) != "" && trim($_POST["password"]) != "")
         $dn = "CN=users,DC=stones,DC=corp";
         $attrs = array("displayname","mail");  
         }
-
         Header("Location: ../mod_01_dashboard.php");
     }
     else{  
