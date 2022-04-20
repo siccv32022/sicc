@@ -3,10 +3,11 @@ if(trim($_POST["usuario"]) != "" && trim($_POST["password"]) != "")
 {
     include("../class/conn.php");
     include("../class/usuarios_class.php");
-
-    if (isset($ldap) || true){
-   //session_destroy();
+    
+    $ldapbind = ldap_bind($ldapconn, 'STONES1\\'.strtolower($_POST['usuario']), $_POST['password']);
+    if ( $ldapbind == 1){
    session_start();
+   
    //session_cache_limiter('nocache,private');    
  
    $_SESSION['k_username']= strtolower($_POST['usuario']);
@@ -31,11 +32,12 @@ if(trim($_POST["usuario"]) != "" && trim($_POST["password"]) != "")
         $dn = "CN=users,DC=stones,DC=corp";
         $attrs = array("displayname","mail");  
         }
+
         Header("Location: ../mod_01_dashboard.php");
     }
     else{  
 	    session_destroy();
-        Header("Location: ../index.php?error=1");
+      Header("Location: ../index.php?error=1");
     }
 
     }
@@ -47,6 +49,6 @@ if(trim($_POST["usuario"]) != "" && trim($_POST["password"]) != "")
 else 
 {
 	session_destroy();
-        Header("Location: ../index.php?error=3");       
+        Header("Location: ../index.php?error=3");  
 }
 ?>

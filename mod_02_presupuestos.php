@@ -139,7 +139,7 @@ if (ISSET($_SESSION['rol']) != null) {
                                                 $arr = json_decode($json,TRUE);
 
                                                 foreach ($arr["@attributes"] as $adjunto) {
-                                                    echo "<a href='Z:/".$adjunto."' target='_blank' rel='noopener noreferrer'>".$adjunto."</a> ";
+                                                    echo "<a href='http://192.168.1.168/adjuntos/".$adjunto."' target='_blank' rel='noopener noreferrer'>".$adjunto."</a> ";
                                                 }
                                             }
                                             else
