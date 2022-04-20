@@ -139,7 +139,11 @@ if (ISSET($_SESSION['rol']) != null) {
                                                 $arr = json_decode($json,TRUE);
 
                                                 foreach ($arr["@attributes"] as $adjunto) {
-                                                    echo "<a href='/adjuntos/".$adjunto."' target='_blank' rel='noopener noreferrer'>".$adjunto."</a> ";
+                                                    ?>
+                                                        <a href='/adjuntos/<?php echo $adjunto; ?>' target='_blank' rel='noopener noreferrer' onClick="window.open(this.href, this.target, 'width=900,height=700'); return false;" >
+                                                            <i class="demo-pli-file" rel="tooltip" title="<?php echo $adjunto; ?>" id="blah" ></i>                                                          
+                                                        </a>
+                                                    <?php
                                                 }
                                             }
                                             else
