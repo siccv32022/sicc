@@ -7,7 +7,7 @@ error_reporting(E_ALL);
 //$user= 'sa';
 //$pass= 'SAPB1Admin';
 
-ldapconn=ldap_connect('192.168.1.56') or die ("Error en BBDD SAP!\n"); 
+$ldapconn=ldap_connect('192.168.1.56') or die ("Error en BBDD SAP!\n"); 
 
 // Puesto que no se han especificado UID ni PWD en el array  $connectionInfo,
 // La conexión se intentará utilizando la autenticación Windows.
