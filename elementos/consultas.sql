@@ -1,4 +1,22 @@
 
+
+   SELECT CONCAT ('(',UPPER(DATENAME(month,  GETDATE ())),' ',YEAR(GETDATE ()),')')
+   SELECT CONCAT ('(',UPPER(DATENAME(month,  DATEADD(MM, -1,GETDATE()))),' ',YEAR(GETDATE ()),')')
+   SELECT CONCAT ('(',UPPER(DATENAME(month,  DATEADD(MM, -2,GETDATE()))),' ',YEAR(GETDATE ()),')')
+   SELECT CONCAT ('(HASTA ',UPPER(DATENAME(month,  DATEADD(MM, -3,GETDATE()))),'-',YEAR(GETDATE ()),')')
+   SELECT CONCAT ('(2o SEM ',DATENAME(YEAR,  DATEADD(YY, -1,GETDATE())),')')
+   SELECT CONCAT ('(1er SEM ',DATENAME(YEAR,  DATEADD(YY, -1,GETDATE())),')')
+   SELECT CONCAT ('(ANTES DE ',DATENAME(YEAR,  DATEADD(YY, -1,GETDATE())),')')
+
+
+   SELECT DATEADD(MM, -1,GETDATE())
+
+   CONVERT(varchar,CV.DocDate,105) 
+   CAST(ROUND(      DV.DiscPrcnt     ,2,1) AS DECIMAL(20,2))  
+   Between TRY_PARSE (? as datetime using 'es-ES') and TRY_PARSE (? as datetime using 'es-ES');
+
+
+
 ----------------------------to update
 update sicc.mod_modulos set query="" where id_modulo=19
 
@@ -484,3 +502,63 @@ update sicc.mod_modulos set query="" where id_modulo=19
                 FROM OPCH T0  INNER JOIN PCH1 T1 ON T0.DocEntry = T1.DocEntry
                 WHERE  T0.DocType = 'I' 
                 and T0.DocDate  Between TRY_PARSE (? as datetime using 'es-ES') and TRY_PARSE (? as datetime using 'es-ES');
+
+
+
+        ------------------------------------------------------------Entrega-Dev
+update sicc.mod_modulos set query="
+  Select 
+       concat ('E ',CV.DocNum) '# ENTREGA - DEVOLUCION',
+	   --CV.DocNum 'Entrega',
+       CASE When CV.Series = 45 Then 'CF' Else 'CR' END TIPO,
+       CF.DocNum  'FACTURA #',
+	   (SELECT concat(FileName,'.',FileExt) as adj FROM ATC1 where AbsEntry= CV.AtcEntry  FOR XML PATH ('Archivo'),Type, Root('Archivos'))  AS 'ADJ',
+        CONVERT(varchar,CV.DocDate,105) FECHA,
+       CV.CardCode 'COD/CLIENTE',
+       CONCAT(CV.CardName, ' / ',Convert(varchar(254),DC.AliasName) ) CLIENTE,
+       DV.ItemCode MATERIAL,
+       DV.Dscription DESCRIPCIÓN,
+       CAST(ROUND(DV.Quantity,2,1) AS DECIMAL(20,4)) M2,
+	   CAST(ROUND( CASE WHEN DV.Currency = 'MXP' THEN DV.PriceBefDi ELSE DV.PriceBefDi END,2,1) AS DECIMAL(20,2)) 'P/U',
+	   CAST(ROUND(CASE WHEN DV.Currency = 'MXP' THEN DV.LineTotal ELSE DV.TotalFrgn-CV.DiscSumFC END,2,1) AS DECIMAL(20,2)) SUBTOTAL,
+       CAST(ROUND(CASE WHEN DV.Currency = 'MXP' THEN DV.LineVat  ELSE  DV.LineVatS END,2,1) AS DECIMAL(20,2)) IVA,
+	   CAST(ROUND(CASE WHEN DV.Currency = 'MXP' THEN DV.LineTotal+DV.LineVat ELSE DV.TotalFrgn+DV.LineVatS-CV.DiscSumFC END,2,1) AS DECIMAL(20,2)) TOTAL,
+	   T2.SlpName as VENDEDOR,
+	   CAST(ROUND((DV.VatPrcnt/100),2,1) AS DECIMAL(20,2)) '% Iva',	 
+	   CV.U_Soporte_doc Soporte,
+       CV.AtcEntry,
+	   CV.DocCur AS MON
+	    
+  FROM DLN1 DV
+  JOIN ODLN CV ON DV.DocEntry = CV.DocEntry
+   join OCRD DC ON CV.CardCode = DC.CardCode
+  Join ORTT TC ON CV.DocDate = TC.RateDate AND TC.Currency = 'USD'
+  left Join OINV CF on CF.DocEntry = DV.TrgetEntry
+  INNER JOIN OSLP T2 ON T2.SlpCode = CV.SlpCode
+  WHERE  CV.DocDate  Between TRY_PARSE (? as datetime using 'es-ES') and TRY_PARSE (? as datetime using 'es-ES');
+" where id_modulo=20
+
+
+        -----------------------------------------------------------PEFA
+update sicc.mod_modulos set query="
+ SELECT 
+    Ccliente AS CCLIENTE, Nombre AS NOMBRE, Proyecto AS PROYECTO, Moneda AS MONEDA,
+     CAST(ROUND( sum (CASE WHEN Datos = 'Entregas' THEN MXP ELSE 0 END),2,1) AS DECIMAL(20,2)) 'ENTREGAS MXP',
+     CAST(ROUND(sum (CASE WHEN Datos = 'Entregas' THEN USD ELSE 0 END),2,1) AS DECIMAL(20,2)) 'ENTREGAS USD',
+     CAST(ROUND(sum (CASE WHEN Datos = 'Entregas' THEN EUR ELSE 0 END),2,1) AS DECIMAL(20,2)) 'ENTREGAS EUR',
+     CAST(ROUND(sum (CASE WHEN Datos = 'Facturas' THEN MXP ELSE 0 END),2,1) AS DECIMAL(20,2)) 'FACTURAS MXP',
+     CAST(ROUND(sum (CASE WHEN Datos = 'Facturas' THEN USD ELSE 0 END),2,1) AS DECIMAL(20,2)) 'FACTURAS USD',
+     CAST(ROUND(sum (CASE WHEN Datos = 'Facturas' THEN EUR ELSE 0 END),2,1) AS DECIMAL(20,2)) 'FACTURAS EUR',
+     CAST(ROUND(sum (CASE WHEN Datos = 'Pedidos' THEN MXP ELSE 0 END),2,1) AS DECIMAL(20,2)) 'PEDIDOS MXP',
+     CAST(ROUND(sum (CASE WHEN Datos = 'Pedidos' THEN USD ELSE 0 END),2,1) AS DECIMAL(20,2)) 'PEDIDOS USD',
+     CAST(ROUND(sum (CASE WHEN Datos = 'Pedidos' THEN EUR ELSE 0 END),2,1) AS DECIMAL(20,2)) 'PEDIDOS EUR',
+     CAST(ROUND(sum (CASE WHEN Datos = 'Anticipos' THEN MXP ELSE 0 END),2,1) AS DECIMAL(20,2)) 'ANTICIPOS MXP',
+     CAST(ROUND(sum (CASE WHEN Datos = 'Anticipos' THEN USD ELSE 0 END),2,1) AS DECIMAL(20,2)) 'ANTICIPOS USD',
+     CAST(ROUND(sum (CASE WHEN Datos = 'Anticipos' THEN EUR ELSE 0 END),2,1) AS DECIMAL(20,2)) 'ANTICIPOS EUR'
+    FROM View_DetalleClientes
+    WHERE Moneda NOT IN (SELECT Moneda FROM View_DetalleClientes WHERE Moneda = '##') AND Ccliente NOT like 'P%'
+    group by Ccliente, Nombre, Proyecto, Moneda
+" where id_modulo=22
+
+
+

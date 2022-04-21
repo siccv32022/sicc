@@ -37,12 +37,37 @@ if (ISSET( $_SESSION['rol']) !=null) {
                                     <div class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-start">
                                         <i class="<?php echo $row['icono']; ?>  fs-1"></i>
                                     </div>
-                                    <div class="flex-grow-1 ms-0">
-                                        <h1 class="h5 mb-0"> 
-                                            <a href="<?php echo $row['archivo']; ?>" class="nav-link mininav-toggle">
-                                            <?php echo $row['descripcion']; ?></h1>
-                                    </div>
-                                    </a>
+                                    <div class="flex-grow-1 ms-0">                                        
+                                            <?php if( $row['submodulos']==1 ){?>
+                                                <h1 class="h5 mb-0"> 
+                                                <?php echo $row['descripcion']; ?>
+                                                </h1>
+
+                                            <?php 
+                                                $Submodulos = new Usuarios();
+                                                $submodulosResult = $Submodulos->getSubmodulos($row['id_modulo']);
+                                                if ($submodulosResult['exitoso'] && count($submodulosResult['resultado']) > 0) {
+                                
+                                                    foreach ($submodulosResult['resultado'] as $row2){
+                                                        ?>
+                                                        <a href="<?php echo $row2['archivo']; ?>" class="nav-link mininav-toggle">
+                                                            <?php echo str_replace($row['descripcion'], '' , $row2['descripcion']); ?>
+                                                        </a>
+                                                        <?php
+                                                    }
+                                                }
+                                            }
+                                            else { 
+                                                ?>
+                                                <h1 class="h5 mb-0"> 
+                                                <a href="<?php echo $row['archivo']; ?>" class="nav-link mininav-toggle">
+                                                <?php echo $row['descripcion']; ?>
+                                                </a>
+                                                </h1>
+                                            <?php } ?>
+
+                                        
+                                    </div>                                   
                                 </div>
                             </div>
                                     

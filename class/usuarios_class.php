@@ -157,5 +157,31 @@ class Usuarios
         return $resultado;
     }
 
+    public function  GetSubmodulos($idModulo){
+        $resultado = array();
+        $resultado['exitoso'] = true;
+        try {            
+            $obj_conecion = new ConexionPDO('mysql');
+            //$parameter=[$this->getIdModulo()];
+            $parameter=[$idModulo];
+            $query = "call sicc.sp_getModulosHijos(?);"; 
+                   
+            $result = $obj_conecion->ejecutarSentenciaPreparada($query,$parameter);
+            if(!$result['exitoso'] || empty($result['exitoso'])){
+                $resultado['exitoso'] = false;
+            }
+            if($resultado['exitoso']){
+                $resultado['resultado'] = $result['resultado']; 
+            }
+                    
+        } catch (Exception $fallo) {
+            $resultado['exitoso'] = false;
+            $resultado['mensaje'] = 'Fallo en la conexion PDO';
+            echo $fallo->getMessage();
+        }
+        
+        return $resultado;
+    }
+
 
 }

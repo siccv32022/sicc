@@ -8,7 +8,7 @@
                     <div class="brand-wrap">
 
                         <!-- Brand logo -->
-                        <a href="#" class="brand-img stretched-link">
+                        <a href="mod_01_dashboard.php" class="brand-img stretched-link">
                             <img src="./assets/img/stones1.png" alt="Stones piedras naturales" class="Stones logo">
                         </a>
 
@@ -93,18 +93,55 @@
                             if ($ModulosUsuario['exitoso'] && count($ModulosUsuario['resultado']) > 0) {
                                 
                                 foreach ($ModulosUsuario['resultado'] as $row) {
+
+                                    if( $row['submodulos']==1 ){
                             ?>
 
-                             <!-- Regular menu link -->
-                        <li class="nav-item">
-                            <a href="<?php echo $row['archivo']; ?>" class="nav-link mininav-toggle"><i class="<?php echo $row['icono']; ?> fs-5 me-2"></i>
+                                    <!-- Regular menu link -->
+                                    <li class="nav-item has-sub">
 
-                                <span class="nav-label mininav-content"><?php echo $row['descripcion']; ?></span>
-                            </a>
-                        </li>
-                        <!-- END : Regular menu link -->
+                                    <a href="#" class="mininav-toggle nav-link collapsed"><i class="<?php echo $row['icono']; ?> fs-5 me-2"></i>
+                                        <span class="nav-label ms-1"><?php echo $row['descripcion']; ?></span>
+                                    </a>
+
+                                    <ul class="mininav-content nav collapse">
+                                    <!-- Layouts submenu list -->
+                                    <?php 
+                                                $Submodulos = new Usuarios();
+                                                $submodulosResult = $Submodulos->getSubmodulos($row['id_modulo']);
+                                                if ($submodulosResult['exitoso'] && count($submodulosResult['resultado']) > 0) {
+                                
+                                                    foreach ($submodulosResult['resultado'] as $row2){
+                                     ?>
+                                        <li class="nav-item">
+                                            <a href="<?php echo $row2['archivo']; ?>" class="nav-link"> <?php echo str_replace($row['descripcion'], '' , $row2['descripcion']); ?></a>
+                                        </li>                        
+                            <?php   
+                                                    }
+                                                }     
+                                                
+                                                ?>
+                                                </ul>
+                                    <!-- END : Layouts submenu list -->
+                                    </li>
+                                <!-- END : Regular menu link -->
+
+                                                <?php
+                            }
+                            else { 
+                                ?>
+
+                                    <!-- Regular menu link -->
+                                <li class="nav-item">
+                                    <a href="<?php echo $row['archivo']; ?>" class="nav-link mininav-toggle"><i class="<?php echo $row['icono']; ?> fs-5 me-2"></i>
+
+                                        <span class="nav-label mininav-content"><?php echo $row['descripcion']; ?></span>
+                                    </a>
+                                </li>
+                                <!-- END : Regular menu link -->
                         
-                            <?php      
+                            <?php    
+                            }  
                                                              
                                 }
                             }
