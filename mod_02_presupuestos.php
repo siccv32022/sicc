@@ -11,17 +11,22 @@ if (ISSET($_SESSION['rol']) != null) {
     $informaciónModulo->setIdModulo($idModulo);
     $informaciónModuloResult = $informaciónModulo->GetInformacionModulo( $idModulo);
     $query="";
+    $reportName="";
+    $repotIcon="";
     if ($informaciónModuloResult['exitoso'] && count($informaciónModuloResult['resultado']) > 0) {
          foreach ($informaciónModuloResult['resultado'] as $row) {
             $query=$row['query'];
+            $reportName=$row['descripcion'];
+            $repotIcon=$row['icono'];
         }
     }
-    echo $query;
     
     $ModulosPorUsuario = new Usuarios();
     $ModulosPorUsuario->setIdRol($_SESSION['id_rol']);
     $ModulosUsuario = $ModulosPorUsuario->ModulosPorRol();
 
+    if($query!="")
+    {
     $ColumnasModulosPorUsuario = new Usuarios();
     $ColumnasModulosPorUsuario->setIdModulo($idModulo);
     $ColumnasModulosUsuario = $ModulosPorUsuario->ColumnasPorRol( $idModulo);
@@ -29,64 +34,14 @@ if (ISSET($_SESSION['rol']) != null) {
     $Usuarios = new Usuarios();
     $UsuarioFull = $Usuarios->ObtenerUsuarios();
 
-    $Presupuestos = new Presupuestos();
-    $PresupuestosFull = $Presupuestos->getPresupuestos();
+   $Reports = new Reportes();
+   $Reports->setQuery($query);
+   $GetReport =$Reports->getReport();
 
-
-    switch ($idModulo) {
-        case 2:
-            $PresupuestosFull = $Presupuestos->getPresupuestos();
-            break;
-        case 3:
-            $PresupuestosFull = $Presupuestos->getPedidos();
-            break;
-        case 4:
-            $PresupuestosFull = $Presupuestos->getNotaEntregas();
-             break;
-        case 6:
-            $PresupuestosFull = $Presupuestos->getInventario();
-            break;
-        case 7:
-            $PresupuestosFull = $Presupuestos->getInventario();
-            break;
-        case 9:
-            $PresupuestosFull = $Presupuestos->getEntradas();
-             break;
-        case 10:
-            $PresupuestosFull = $Presupuestos->getOfertaCompras();
-            break;
-        case 11:
-            $PresupuestosFull = $Presupuestos->getOfertaCompras();
-            break;
-        case 12:
-            $PresupuestosFull = $Presupuestos->getImportaciones();
-            break;
-        case 13:
-            $PresupuestosFull = $Presupuestos->getImportaciones();
-            break;
-        case 14:
-            $PresupuestosFull = $Presupuestos->getVentas();
-            break;
-        case 15:
-            $PresupuestosFull = $Presupuestos->getVentas();
-             break;
-        case 16:
-            $PresupuestosFull = $Presupuestos->getPagos();
-            break;
-        case 17:
-            $PresupuestosFull = $Presupuestos->getTaller();
-            break;
-        case 18:
-            $PresupuestosFull = $Presupuestos->getoOCCerradas();
-            break;
-        case 19:
-            $PresupuestosFull = $Presupuestos->getoFactProv();
-             break;
-        
-    }
     ?>
-
+        <br/><h1 class="h5 mb-3"><i class="<?php echo $repotIcon; ?> fs-5 me-2"></i><?php echo $reportName ?></h1>
     <div style="float:left;">
+    
         <table id="demo" cellpadding="0" cellspacing="0" class="">
             <thead>
                 <tr> 
@@ -112,8 +67,8 @@ if (ISSET($_SESSION['rol']) != null) {
             </thead>
             <tbody>
                 <?php
-                if ($PresupuestosFull['exitoso'] && count($PresupuestosFull['resultado']) > 0) {
-                    foreach ($PresupuestosFull['resultado'] as $rowSQL) {
+                if ($GetReport['exitoso'] && count($GetReport['resultado']) > 0) {
+                    foreach ($GetReport['resultado'] as $rowSQL) {
                         ?>
                         <tr> 
                              <?php
@@ -289,6 +244,11 @@ if (ISSET($_SESSION['rol']) != null) {
     <div style="clear:both;"></div>
 
     <?php
+    }
+    else
+    {
+        echo "página en construcción";
+    }
     require 'elementos/footer.php';
 } else {
     header("location:index.php");
