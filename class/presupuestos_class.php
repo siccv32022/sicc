@@ -4,6 +4,43 @@ include_once ("conexion_psql.class.php");
 
 class Presupuestos
 {
+
+    private $query;
+
+    public function setQuery($query) {
+        $this->query = $query;
+    }
+    public function getQuery() {
+        return $this->query;
+    }
+
+    public function  getReport(){
+        $resultado = array();
+        $resultado['exitoso'] = true;
+        try {            
+            $obj_conecion = new ConexionPDOSQL('sqlsrv');
+            //$parameter=[date_create_from_format('Y-m-d',$_SESSION["presupuesto_fi"]),date_create_from_format('Y-m-d',$_SESSION["presupuesto_ff"])];            
+            $parameter=[$_SESSION["presupuesto_fi"],$_SESSION["presupuesto_ff"]];            
+            $query=$this->getQuery();
+            $result = $obj_conecion->ejecutarSentenciaPreparada($query,$parameter);
+          
+            if(!$result['exitoso'] || empty($result['exitoso'])){
+                $resultado['exitoso'] = false;
+            }
+            if($resultado['exitoso']){
+                $resultado['resultado'] = $result['resultado']; 
+            }
+                    
+        } catch (Exception $fallo) {
+            $resultado['exitoso'] = false;
+            $resultado['mensaje'] = 'Fallo en la conexion PDO';
+            echo $fallo->getMessage();
+        }
+        
+        return $resultado;
+    }
+
+
     public function  getPresupuestos(){
         $resultado = array();
         $resultado['exitoso'] = true;
@@ -68,7 +105,7 @@ class Presupuestos
             $parameter=[$_SESSION["presupuesto_fi"],$_SESSION["presupuesto_ff"]];            
             $query="
                     Select CP.DocNum 'PEDIDO',
-                    CP.AtcEntry 'ADJ',
+                    (SELECT concat(FileName,'.',FileExt) as adj FROM ATC1 where AbsEntry= CP.AtcEntry FOR XML PATH ('Archivo'),Type, Root('Archivos')) AS ADJ,
                     convert(varchar, CP.DocDate, 105)  'FECHA CREADO',
                     convert(varchar, CP.DocDueDate, 105) 'FECHA VENCIMIENTO',
                     CP.CardCode 'CÓDIGO',
@@ -259,7 +296,7 @@ class Presupuestos
             $query="
             Select
                 EE.DocNum '# ENTRADA',
-                '' as 'ADJUNTO',
+                (SELECT concat(FileName,'.',FileExt) as adj FROM ATC1 where AbsEntry=EE.AtcEntry FOR XML PATH ('Archivo'),Type, Root('Archivos'))  AS 'ADJ',
                 EE.CardName as 'PROVEEDOR',
                 CONVERT(varchar,EE.DocDate,105) 'FECHA',
                 ED.ItemCode 'CÓDIGO MATERIAL',
@@ -308,7 +345,7 @@ class Presupuestos
             $query="
             Select
                 OC.DocNum AS '#',
-                NULL AS 'ADJ',
+                (SELECT concat(FileName,'.',FileExt) as adj FROM ATC1 where AbsEntry=OC.AtcEntry FOR XML PATH ('Archivo'),Type, Root('Archivos'))  AS 'ADJ',
                 OC.CardName 'PROVEEDOR',
                 DC.Dscription 'MATERIAL',
                 CAST(ROUND(DC.Price,2,1) AS DECIMAL(20,2)) 'P/U',
@@ -338,7 +375,7 @@ class Presupuestos
                 Union All
                 Select
                 OC.DocNum AS '#',
-                NULL AS 'ADJ',
+                (SELECT concat(FileName,'.',FileExt) as adj FROM ATC1 where AbsEntry=OC.AtcEntry FOR XML PATH ('Archivo'),Type, Root('Archivos'))  AS 'ADJ',
                 OC.CardName 'PROVEEDOR',
                 DC.Dscription 'MATERIAL',
                 CAST(ROUND(DC.Price,2,1) AS DECIMAL(20,2)) 'P/U',
@@ -391,68 +428,72 @@ class Presupuestos
             //$parameter=[date_create_from_format('Y-m-d',$_SESSION["presupuesto_fi"]),date_create_from_format('Y-m-d',$_SESSION["presupuesto_ff"])];            
             $parameter=[];             
             $query="
+            select 
+            *,
+            (SELECT concat(FileName,'.',FileExt) as adj FROM ATC1 where AbsEntry=AtcEntry FOR XML PATH ('Archivo'),Type, Root('Archivos'))  AS 'ADJ'
+            from (
             Select
-                OC.DocNum #,
-                NULL AS 'OFERTA COMPRA',
-                NULL AS ADJ,
-                OC.CardName PROVEEDOR,
-                DC.Dscription MATERIAL,
-                CAST(ROUND(DC.Quantity,2,1) AS DECIMAL(20,2)) M2,
-                CAST(ROUND(DC.Price,2,1) AS DECIMAL(20,2)) as 'P/U',
-                CAST(ROUND(Case OC.DocCur When 'USD' Then DC.Quantity * DC.Price Else Null End,2,1) AS DECIMAL(20,2)) USD,
-                CAST(ROUND(Case OC.DocCur When 'EUR' Then DC.Quantity * DC.Price Else Null End,2,1) AS DECIMAL(20,2)) EUR,
-                CAST(ROUND(Case OC.DocCur When 'MXP' Then DC.Quantity * DC.Price Else Null End,2,1) AS DECIMAL(20,2)) MXP,
-                CONVERT(varchar,OC.DocDueDate,105) 'FECHA PROBABLE LLEGADA',
-                CONVERT(varchar,OC.TaxDate + CP.ExtraDays,105) 'PLAZO DE PAGO',
-                OC.U_CONTENEDOR CONTENEDOR,
-                concat(OC.U_DESTINO,' / ',OC.Project) DESTINO,
-                OC.NumAtCard referencia,
-                'MAT' Tipo_Gasto,  
-                
-                OC.Comments Comentarios,
-                OC.U_FPUERTO Fecha_Puerto,
-                OC.AtcEntry,
-                OC.U_VENDEDOR
-            From
-                OPOR OC Join
-                POR1 DC On OC.DocEntry = DC.DocEntry Join
-                OCTG CP On OC.GroupNum = CP.GroupNum Join
-                OITM AR On DC.ItemCode = AR.ItemCode
-            Where
-                OC.DocStatus = 'O' And
-                (AR.ItmsGrpCod <> 111 And
-                AR.ItmsGrpCod <> 115)
-            Union
-            Select
-                OC.DocNum #,
-                NULL AS 'OFERTA COMPRA',
-                NULL AS ADJ,
-                OC.CardName PROVEEDOR,
-                DC.Dscription MATERIAL,
-                CAST(ROUND(1,2,1) AS DECIMAL(20,2)) M2,
-                CAST(ROUND(DC.Price,2,1) AS DECIMAL(20,2)) as 'P/U',
-                CAST(ROUND(Case OC.DocCur When 'USD' Then 1 * DC.Price Else Null End,2,1) AS DECIMAL(20,2)) USD,
-                CAST(ROUND(Case OC.DocCur When 'EUR' Then 1 * DC.Price Else Null End,2,1) AS DECIMAL(20,2)) EUR,
-                CAST(ROUND(Case OC.DocCur When 'MXP' Then 1 * DC.Price Else Null End,2,1) AS DECIMAL(20,2)) MXP,
-                CONVERT(varchar,OC.DocDueDate,105) 'FECHA PROBABLE LLEGADA',
-                CONVERT(varchar,OC.TaxDate + CP.ExtraDays,105) 'PLAZO DE PAGO',
-                OC.U_CONTENEDOR CONTENEDOR,
-                concat(OC.U_DESTINO,' / ',OC.Project) DESTINO,
-            
-                OC.NumAtCard referencia,
-                'GASTO' Tipo_Gasto,  
-                OC.Comments Comentarios,
-                OC.U_FPUERTO Fecha_Puerto,  
-                OC.AtcEntry,
-                OC.U_VENDEDOR
-            From
-                OPOR OC Join
-                POR1 DC On OC.DocEntry = DC.DocEntry Join
-                OCTG CP On OC.GroupNum = CP.GroupNum Left Join
-                OPCH FC On DC.TrgetEntry = FC.DocEntry
-            Where
-                (OC.DocStatus = 'O' OR FC.DocStatus = 'O') And
-                OC.DocType = 'S'
+                           OC.DocNum #,
+                           NULL AS 'OFERTA COMPRA',
+                          -- (SELECT concat(FileName,'.',FileExt) as adj FROM ATC1 where AbsEntry=OC.AtcEntry FOR XML PATH ('Archivo'),Type, Root('Archivos'))  AS 'ADJ',
+                           OC.CardName PROVEEDOR,
+                           DC.Dscription MATERIAL,
+                           CAST(ROUND(DC.Quantity,2,1) AS DECIMAL(20,2)) M2,
+                           CAST(ROUND(DC.Price,2,1) AS DECIMAL(20,2)) as 'P/U',
+                           CAST(ROUND(Case OC.DocCur When 'USD' Then DC.Quantity * DC.Price Else Null End,2,1) AS DECIMAL(20,2)) USD,
+                           CAST(ROUND(Case OC.DocCur When 'EUR' Then DC.Quantity * DC.Price Else Null End,2,1) AS DECIMAL(20,2)) EUR,
+                           CAST(ROUND(Case OC.DocCur When 'MXP' Then DC.Quantity * DC.Price Else Null End,2,1) AS DECIMAL(20,2)) MXP,
+                           CONVERT(varchar,OC.DocDueDate,105) 'FECHA PROBABLE LLEGADA',
+                           CONVERT(varchar,OC.TaxDate + CP.ExtraDays,105) 'PLAZO DE PAGO',
+                           OC.U_CONTENEDOR CONTENEDOR,
+                           concat(OC.U_DESTINO,' / ',OC.Project) DESTINO,
+                           OC.NumAtCard referencia,
+                           'MAT' Tipo_Gasto,                  
+                           OC.Comments COMENTARIOS,
+                           OC.U_FPUERTO Fecha_Puerto,
+                           OC.AtcEntry,
+                           OC.U_VENDEDOR
+                       From
+                           OPOR OC Join
+                           POR1 DC On OC.DocEntry = DC.DocEntry Join
+                           OCTG CP On OC.GroupNum = CP.GroupNum Join
+                           OITM AR On DC.ItemCode = AR.ItemCode
+                       Where
+                           OC.DocStatus = 'O' And
+                           (AR.ItmsGrpCod <> 111 And
+                           AR.ItmsGrpCod <> 115)
+                       Union
+                       Select
+                           OC.DocNum #,
+                           NULL AS 'OFERTA COMPRA',
+                          -- (SELECT concat(FileName,'.',FileExt) as adj FROM ATC1 where AbsEntry= OC.AtcEntry FOR XML PATH ('Archivo'),Type, Root('Archivos')) AS ADJ,
+                           OC.CardName PROVEEDOR,
+                           DC.Dscription MATERIAL,
+                           CAST(ROUND(1,2,1) AS DECIMAL(20,2)) M2,
+                           CAST(ROUND(DC.Price,2,1) AS DECIMAL(20,2)) as 'P/U',
+                           CAST(ROUND(Case OC.DocCur When 'USD' Then 1 * DC.Price Else Null End,2,1) AS DECIMAL(20,2)) USD,
+                           CAST(ROUND(Case OC.DocCur When 'EUR' Then 1 * DC.Price Else Null End,2,1) AS DECIMAL(20,2)) EUR,
+                           CAST(ROUND(Case OC.DocCur When 'MXP' Then 1 * DC.Price Else Null End,2,1) AS DECIMAL(20,2)) MXP,
+                           CONVERT(varchar,OC.DocDueDate,105) 'FECHA PROBABLE LLEGADA',
+                           CONVERT(varchar,OC.TaxDate + CP.ExtraDays,105) 'PLAZO DE PAGO',
+                           OC.U_CONTENEDOR CONTENEDOR,
+                           concat(OC.U_DESTINO,' / ',OC.Project) DESTINO,
+                       
+                           OC.NumAtCard referencia,
+                           'GASTO' Tipo_Gasto,  
+                           OC.Comments Comentarios,
+                           OC.U_FPUERTO Fecha_Puerto,  
+                           OC.AtcEntry,
+                           OC.U_VENDEDOR
+                       From
+                           OPOR OC Join
+                           POR1 DC On OC.DocEntry = DC.DocEntry Join
+                           OCTG CP On OC.GroupNum = CP.GroupNum Left Join
+                           OPCH FC On DC.TrgetEntry = FC.DocEntry
+                       Where
+                           (OC.DocStatus = 'O' OR FC.DocStatus = 'O') And
+                           OC.DocType = 'S'
+                           ) AS RF
             ";
             $result = $obj_conecion->ejecutarSentenciaPreparada($query,$parameter);
           
@@ -484,7 +525,7 @@ class Presupuestos
                 CV.DocNum '# NOTA DE ENTREGA',
                 CASE When CV.Series = 45 Then 'CF' Else 'CR' END TIPO,
                 CF.DocNum  '# FACTURA',
-                (SELECT concat(FileName,'.',FileExt) as adj FROM ATC1 where AbsEntry=CV.AtcEntry FOR XML AUTO)  AS ADJ,
+                (SELECT concat(FileName,'.',FileExt) as adj FROM ATC1 where AbsEntry= CV.AtcEntry FOR XML PATH ('Archivo'),Type, Root('Archivos')) AS ADJ,
                 CONVERT(varchar,CV.DocDate,105) FECHA,
                 CV.CardCode 'COD/CLIENTE',
                 concat(CV.CardName,' / ',Convert(varchar(254),DC.AliasName)) CLIENTE,
@@ -656,6 +697,103 @@ class Presupuestos
         Left Join ORDR PED On PED.DocNum = COF.OriginNum
         Left Join OSLP VEN On VEN.SlpCode = PED.SlpCode
         Where (COF.Status <> 'L' AND COF.Status <> 'C') And DOF.IssueType = 'M';
+            ";
+            $result = $obj_conecion->ejecutarSentenciaPreparada($query,$parameter);
+          
+            if(!$result['exitoso'] || empty($result['exitoso'])){
+                $resultado['exitoso'] = false;
+            }
+            if($resultado['exitoso']){
+                $resultado['resultado'] = $result['resultado']; 
+            }
+                    
+        } catch (Exception $fallo) {
+            $resultado['exitoso'] = false;
+            $resultado['mensaje'] = 'Fallo en la conexion PDO';
+            echo $fallo->getMessage();
+        }
+        
+        return $resultado;
+    }
+
+    public function  getoOCCerradas(){
+        $resultado = array();
+        $resultado['exitoso'] = true;
+        try {            
+            $obj_conecion = new ConexionPDOSQL('sqlsrv');         
+            $parameter=[];             
+            $query="
+            Select
+                OC.DocNum AS #,
+                (SELECT concat(FileName,'.',FileExt) as adj FROM ATC1 where AbsEntry=OC.AtcEntry FOR XML PATH ('Archivo'),Type, Root('Archivos'))  AS ADJ,
+                OC.CardName PROVEEDOR,
+                DC.Dscription MATERIAL,
+                DC.Price 'P/U',
+                Case OC.DocCur When 'USD' Then DC.Quantity * DC.Price Else Null End USD,
+                Case OC.DocCur When 'EUR' Then DC.Quantity * DC.Price Else Null End EUR,
+                CONVERT(varchar,OC.ReqDate,105) 'FECHA COLOCACIÓN',
+                CONVERT(varchar,OC.DocDate,105) 'FECHA PROBABLE EMBARQUE',
+                --Case OC.DocCur When 'MXP' Then DC.Quantity * DC.Price Else Null End MXP,
+                DC.Quantity 'CTD SOLICITADA',
+                DC.OpenCreQty 'CTD ENTREGADA',
+                (DC.Quantity - DC.OpenCreQty) 'CTD FALTANTE',
+                OC.Comments COMENTARIOS,
+                Convert(varchar(254),OC.U_Status) STATUS,
+                CASE WHEN DATEDIFF(day, OC.DocDueDate , GETDATE()) > 0 THEN ' bg-danger ' ELSE (CASE WHEN DATEDIFF(day, OC.DocDueDate , GETDATE()) >= -2 THEN ' bg-warning ' ELSE ' bg-success ' END) END  AS 'AUX_STATUS',
+                DC.TrgetEntry Ex_Orden,  
+                OC.AtcEntry,  
+                'MAT' Tipo_Gasto
+                From
+                OPQT OC Join
+                PQT1 DC On OC.DocEntry = DC.DocEntry Join
+                OCTG CP On OC.GroupNum = CP.GroupNum Join
+                OITM AR On DC.ItemCode = AR.ItemCode    
+                Where
+                OC.DocStatus = 'c' And
+                (AR.ItmsGrpCod <> 111 And
+                AR.ItmsGrpCod <> 115) And 
+                DC.LineStatus = 'c' and 
+                DATEDIFF(DD, OC.DocDate, getdate()) < = 365   order by OC.DocDate desc;
+            ";
+            $result = $obj_conecion->ejecutarSentenciaPreparada($query,$parameter);
+          
+            if(!$result['exitoso'] || empty($result['exitoso'])){
+                $resultado['exitoso'] = false;
+            }
+            if($resultado['exitoso']){
+                $resultado['resultado'] = $result['resultado']; 
+            }
+                    
+        } catch (Exception $fallo) {
+            $resultado['exitoso'] = false;
+            $resultado['mensaje'] = 'Fallo en la conexion PDO';
+            echo $fallo->getMessage();
+        }
+        
+        return $resultado;
+    }
+
+    public function  getoFactProv(){
+        $resultado = array();
+        $resultado['exitoso'] = true;
+        try {            
+            $obj_conecion = new ConexionPDOSQL('sqlsrv');         
+           $parameter=[$_SESSION["presupuesto_fi"],$_SESSION["presupuesto_ff"]];             
+            $query="
+            SELECT T0.DocNum '# FACTURA',
+                (SELECT concat(FileName,'.',FileExt) as adj FROM ATC1 where AbsEntry=T0.AtcEntry  FOR XML PATH ('Archivo'),Type, Root('Archivos'))  AS 'ADJ',
+                T0.NumAtCard 'REFERENCIA #',
+                CONVERT(varchar,T0.DocDate,105) 'FECHA',
+                T0.CardCode 'COD PROVEEDOR',
+                T0.CardName 'PROVEEDOR',
+                T1.Dscription 'DESCRIPCIÓN',
+                CAST(ROUND(T1.Quantity,2,1) AS DECIMAL(20,4)) 'CANTIDAD',
+                CAST(ROUND(T1.Price,2,1) AS DECIMAL(20,2)) 'P/U',
+                T1.Currency 'MONEDA',
+                T0.U_CONTENEDOR 'CONTENEDOR'
+                FROM OPCH T0  INNER JOIN PCH1 T1 ON T0.DocEntry = T1.DocEntry
+                WHERE  T0.DocType = 'I' 
+                and T0.DocDate  Between TRY_PARSE (? as datetime using 'es-ES') and TRY_PARSE (? as datetime using 'es-ES');
             ";
             $result = $obj_conecion->ejecutarSentenciaPreparada($query,$parameter);
           

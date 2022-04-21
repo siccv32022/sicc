@@ -6,6 +6,18 @@ if (ISSET($_SESSION['rol']) != null) {
     include("class/presupuestos_class.php");
 
     $idModulo = $_GET['id'];
+
+    $informaciónModulo = new Usuarios();
+    $informaciónModulo->setIdModulo($idModulo);
+    $informaciónModuloResult = $informaciónModulo->GetInformacionModulo( $idModulo);
+    $query="";
+    if ($informaciónModuloResult['exitoso'] && count($informaciónModuloResult['resultado']) > 0) {
+         foreach ($informaciónModuloResult['resultado'] as $row) {
+            $query=$row['query'];
+        }
+    }
+    echo $query;
+    
     $ModulosPorUsuario = new Usuarios();
     $ModulosPorUsuario->setIdRol($_SESSION['id_rol']);
     $ModulosUsuario = $ModulosPorUsuario->ModulosPorRol();
@@ -19,6 +31,7 @@ if (ISSET($_SESSION['rol']) != null) {
 
     $Presupuestos = new Presupuestos();
     $PresupuestosFull = $Presupuestos->getPresupuestos();
+
 
     switch ($idModulo) {
         case 2:
@@ -63,6 +76,12 @@ if (ISSET($_SESSION['rol']) != null) {
         case 17:
             $PresupuestosFull = $Presupuestos->getTaller();
             break;
+        case 18:
+            $PresupuestosFull = $Presupuestos->getoOCCerradas();
+            break;
+        case 19:
+            $PresupuestosFull = $Presupuestos->getoFactProv();
+             break;
         
     }
     ?>
@@ -136,14 +155,27 @@ if (ISSET($_SESSION['rol']) != null) {
                                             {
                                                 $XML = simplexml_load_string($rowSQL[$nombreColumna], "SimpleXMLElement", LIBXML_NOCDATA);
                                                 $json = json_encode($XML);
-                                                $arr = json_decode($json,TRUE);
+                                                $arr = json_decode($json,TRUE); 
 
-                                                foreach ($arr["@attributes"] as $adjunto) {
-                                                    ?>
-                                                        <a href='/adjuntos/<?php echo $adjunto; ?>' target='_blank' rel='noopener noreferrer' onClick="window.open(this.href, this.target, 'width=900,height=700'); return false;" >
-                                                            <i class="demo-pli-file" rel="tooltip" title="<?php echo $adjunto; ?>" id="blah" ></i>                                                          
-                                                        </a>
-                                                    <?php
+                                                foreach ($arr["Archivo"] as $adjunto) {
+
+                                                    if(is_array( $adjunto))
+                                                    {
+                                                        foreach ($adjunto as $adjunto2) {
+                                                                ?>
+                                                                    <a href='/adjuntos/<?php echo $adjunto2; ?>' target='_blank' rel='noopener noreferrer' onClick="window.open(this.href, this.target, 'width=900,height=700'); return false;" >
+                                                                        <i class="demo-pli-file" rel="tooltip" title="<?php echo $adjunto2; ?>" id="blah" ></i>                                                          
+                                                                    </a>
+                                                                <?php
+                                                            }     
+                                                    }
+                                                    else{
+                                                        ?>
+                                                            <a href='/adjuntos/<?php echo $adjunto; ?>' target='_blank' rel='noopener noreferrer' onClick="window.open(this.href, this.target, 'width=900,height=700'); return false;" >
+                                                                <i class="demo-pli-file" rel="tooltip" title="<?php echo $adjunto; ?>" id="blah" ></i>                                                          
+                                                            </a>
+                                                        <?php
+                                                    }                                                   
                                                 }
                                             }
                                             else
