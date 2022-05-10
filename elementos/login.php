@@ -26,14 +26,14 @@ if(trim($_POST["usuario"]) != "" && trim($_POST["password"]) != "")
         $_SESSION['id_rol'] = $row['id_rol'];
         $_SESSION['foto'] = $row['foto'];
         
-        $_SESSION["presupuesto_fi"]=date("Y-m-d",strtotime('-10 days'));
-		$_SESSION["presupuesto_ff"]=date('Y-m-d');
+        $_SESSION["fecha_inicio"]=date("Y-m-d",strtotime('-30 days'));
+		$_SESSION["fecha_fin"]=date('Y-m-d');
 
         $dn = "CN=users,DC=stones,DC=corp";
         $attrs = array("displayname","mail");  
         }
 
-        Header("Location: ../mod_01_dashboard.php");
+        Header("Location: ../spnDashboard.php");
     }
     else{  
 	    session_destroy();

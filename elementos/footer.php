@@ -56,6 +56,11 @@
     <!-- Initialize [ SAMPLE ] -->
     <script src="./assets/pages/dashboard-2.js" defer></script>
 
+    <script src="./assets/vendors/mc-datepicker/mc-calendar.min.js" defer></script>
+    <script src="./assets/vendors/litepicker/bundle.min.js" defer></script>
+    <script src="./assets/vendors/md-date-time-picker/moment.min.js" defer></script>
+    <script src="./assets/vendors/md-date-time-picker/mdDateTimePicker.min.js" defer></script>
+    <script src="./assets/pages/date-time-picker.js" defer></script>
 </body>
 
 </html>

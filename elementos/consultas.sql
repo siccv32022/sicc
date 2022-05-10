@@ -11,6 +11,7 @@
 
    SELECT DATEADD(MM, -1,GETDATE())
 
+(SELECT concat(FileName,'.',FileExt) as adj FROM ATC1 where AbsEntry= T0.AtcEntry FOR XML PATH ('Archivo'),Type, Root('Archivos')) AS ADJ,
    CONVERT(varchar,CV.DocDate,105) 
    CAST(ROUND(      DV.DiscPrcnt     ,2,1) AS DECIMAL(20,2))  
    Between TRY_PARSE (? as datetime using 'es-ES') and TRY_PARSE (? as datetime using 'es-ES');

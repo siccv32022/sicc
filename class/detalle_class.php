@@ -2,10 +2,11 @@
 
 include_once ("conexion_psql.class.php");
 
-class Reportes
+class Detalle
 {
-
+    private $idConsulta;
     private $query;
+    
 
     public function setQuery($query) {
         $this->query = $query;
@@ -14,13 +15,21 @@ class Reportes
         return $this->query;
     }
 
-    public function  getReport(){
+    public function setidConsulta($idConsulta) {
+        $this->idConsulta = $idConsulta;
+    }
+    public function getidConsulta() {
+        return $this->idConsulta;
+    }
+
+
+
+    public function  getReport($id){
         $resultado = array();
         $resultado['exitoso'] = true;
         try {            
-            $obj_conecion = new ConexionPDOSQL('sqlsrv');
-            //$parameter=[date_create_from_format('Y-m-d',$_SESSION["presupuesto_fi"]),date_create_from_format('Y-m-d',$_SESSION["presupuesto_ff"])];            
-            $parameter=[$_SESSION["presupuesto_fi"],$_SESSION["presupuesto_ff"]];            
+            $obj_conecion = new ConexionPDOSQL('sqlsrv');         
+            $parameter=[$id];            
             $query=$this->getQuery();
             $result = $obj_conecion->ejecutarSentenciaPreparada($query,$parameter);
           

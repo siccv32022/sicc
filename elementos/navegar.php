@@ -8,7 +8,7 @@
                     <div class="brand-wrap">
 
                         <!-- Brand logo -->
-                        <a href="mod_01_dashboard.php" class="brand-img stretched-link">
+                        <a href="spnDashboard.php" class="brand-img stretched-link">
                             <img src="./assets/img/stones1.png" alt="Stones piedras naturales" class="Stones logo">
                         </a>
 
