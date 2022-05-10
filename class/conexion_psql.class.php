@@ -4,7 +4,7 @@
  * Clase que establece las conexiones con la base de datos
  *
  * @author Eemendoza
- */sssssss
+ */
 class ConexionPDOSQL extends PDO {
     
     function __construct() {
