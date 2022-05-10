@@ -4,12 +4,12 @@
  * Clase que establece las conexiones con la base de datos
  *
  * @author Eemendoza
- */
+ */sssssss
 class ConexionPDOSQL extends PDO {
     
     function __construct() {
-         //$inicializacion = parse_ini_file("/home/sicc/sicc.ini", true); //PROD
-         $inicializacion = parse_ini_file("C:/xampp/htdocs/sicc.ini", true);
+         $inicializacion = parse_ini_file("/home/sicc/sicc.ini", true); //PROD
+         //$inicializacion = parse_ini_file("C:/xampp/htdocs/sicc.ini", true);
         
         $conexion['server'] = $inicializacion['conexionSQL']['server'];
         $conexion['base'] = $inicializacion['conexionSQL']['database'];
