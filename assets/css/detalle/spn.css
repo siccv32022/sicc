@@ -1,0 +1,87 @@
+
+body
+{
+	background-color: #E0F3F7;
+	font-size: 9px;
+}
+table
+{
+	font-size: 9px;
+}
+table.detalle
+{
+	border-collapse: collapse;
+	border: black 1 solid;
+	font-size: 9px;
+	width: 100%;
+	text-align: center;
+	background-color: #FFFFFF;
+	
+}
+table.detalle th
+{
+		
+	border: 1 solid;
+	font-size: 9px;
+	background-color: #e2e6e9;	
+}
+table.detalle td
+{
+	border: black 1 solid;	 
+}
+textarea {
+    resize: none;
+	font-size: 9px;
+}
+#tot
+{
+	height:15px;
+	text-align: right;
+	font-size: 9px;
+	size:10;
+}
+#totv
+{
+	height:15px;
+	text-align: right;
+	font-size: 9px;
+	color: #FF0000;
+}
+#cab
+{
+	height:15px;
+	font-size: 8px;
+}
+#codigo
+{
+	height:15px;
+	font-size: 8px;
+}
+table.eti
+{
+	border-collapse: collapse;
+	font-size: 9px;
+}
+table.eti tr
+{
+	border-bottom: rgba(0,0,0,.1) thin ridge;
+	font-size: 9px;
+}
+table.eti td
+{
+	vertical-align: bottom;
+}
+.input
+{
+	font-size: 8px;
+	height:15px;
+	border-width:0; 
+	background-color:transparent;	
+}
+.textarea
+{
+	font-size: 9px;
+	border-width:0; 
+	background-color:transparent;	
+}
+

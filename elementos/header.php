@@ -17,8 +17,6 @@
     <link rel="stylesheet" href="./assets/css/demo-purpose/demo-icons.min.css">
     <link rel="stylesheet" href="./assets/vendors/mc-datepicker/mc-calendar.min.css">
     <link rel="stylesheet" href="./assets/vendors/md-date-time-picker/mdDateTimePicker.min.css">
-
-
    <script src="TableFilter/tablefilter_all_min.js" language="javascript" type="text/javascript"></script>
    
 </head>

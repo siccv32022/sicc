@@ -146,7 +146,7 @@ if (isset($_SESSION['rol']) != null) {
                                                     echo $rowSQL[$nombreColumna];
                                                 }
                                             }
-                                            if (isset($row['concat']) && $row['format_text'] != '' && ($rowSQL[$nombreColumna] != null || $rowSQL[$nombreColumna] != '')) echo $row['concat'];
+                                            if (isset($row['concat']) && $row['format_text'] != '' && ($rowSQL[$nombreColumna] != null || $rowSQL[$nombreColumna] != '')) echo " ".$row['concat'];
                                             ?>
 
 
@@ -202,7 +202,7 @@ if (isset($_SESSION['rol']) != null) {
                 }
                 ?>
 
-                display_all_text: "Mostrar todo",
+                 display_all_text: "Mostrar todo",
                 //	custom_slc_options: {
                 //		cols:[3],
                 //		texts: [['na','0 - 50','50 - 500','500 - 15000','15000 - 25000','25000 - 100000','100000 - 1500000','not na']],

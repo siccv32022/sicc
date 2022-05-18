@@ -1,239 +1,304 @@
-<?php session_start(); 
-if (isset($_SESSION['k_username'])) {
-    include("conn.php");
-    if( $conn===false) {
-                          echo "Conexión no se pudo establecer OK";
-                          die( print_r( sqlsrv_errors(), true));
-                      }
-	} //sesion
-else {
-    session_destroy();
-    Header("Location: index.php");
+<?php
+session_start();
+if (isset($_SESSION['rol']) != null) {
+    include("../class/usuarios_class.php");
+    include("../class/reportes_class.php");
+
+    $idModulo = $_GET['id'];
+    $idModuloDetalle=$idModulo+1000;
+    $noFiltrar = $_GET['no'];
+    $query = "";
+    $queryDetalle = "";
+    $reportName = "";
+    $repotIcon = "";
+
+    //Variables del detalle
+
+    $detalleConsulta=null;
+    
+    $informaciónModulo = new Usuarios();
+    $informaciónModulo->setIdModulo($idModulo);
+    $informaciónModuloResult = $informaciónModulo->GetInformacionModulo($idModulo);
+
+
+    if ($informaciónModuloResult['exitoso'] && count($informaciónModuloResult['resultado']) > 0) {
+        foreach ($informaciónModuloResult['resultado'] as $row) {
+            $query = $row['query'];
+            $reportName = $row['descripcion'];
+            $repotIcon = $row['icono'];
+        }
+    }
+    $informaciónModulo = new Usuarios();
+    $informaciónModulo->setIdModulo($idModuloDetalle);
+    $informaciónModuloResult = $informaciónModulo->GetInformacionModulo($idModuloDetalle);
+
+
+    if ($informaciónModuloResult['exitoso'] && count($informaciónModuloResult['resultado']) > 0) {
+        foreach ($informaciónModuloResult['resultado'] as $row) {
+            $queryDetalle = $row['query'];
+        }
+    }
+    $ModulosPorUsuario = new Usuarios();
+    $ModulosPorUsuario->setIdRol($_SESSION['id_rol']);
+    $ModulosUsuario = $ModulosPorUsuario->ModulosPorRol();
+
+
+    if ($query != "") {
+
+        $Reports = new Reportes();
+        $Reports->setQuery($query);
+        $GetReport = $Reports->getReportFilter($noFiltrar);
+
+        $ColumnasModulosPorDetalle = new Usuarios();
+        $ColumnasModulosPorDetalle->setIdModulo($idModulo);
+        $ColumnasModulosDetalle = $ModulosPorUsuario->ColumnasPorRol($idModulo);   
+        
+        
+        if ($GetReport['exitoso'] && count($GetReport['resultado']) > 0) {
+            $detalleConsulta=reset($GetReport['resultado']);
+        }
+
+        $Reports = new Reportes();
+        $Reports->setQuery($queryDetalle);
+        $GetReport = $Reports->getReportFilter($noFiltrar);
+
+        $ColumnasModulosPorUsuario = new Usuarios();
+        $ColumnasModulosPorUsuario->setIdModulo($idModuloDetalle);
+        $ColumnasModulosUsuario = $ModulosPorUsuario->ColumnasPorRol($idModuloDetalle);    
+        
+    }
+?>
+<!DOCTYPE html PUBLIC>
+<html lang="es" xml:lang="es" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+   <title>PRESUPUESTO | SICC</title>
+    <!-- STYLESHEETS -->   
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/color-schemes/all-headers/cherry/bootstrap.min.css">
+   <script src="TableFilter/tablefilter_all_min.js" language="javascript" type="text/javascript"></script>
+
+
+    <link rel="stylesheet" type="text/css" href="../assets/css/detalle/spn.css" />
+    <link href="../assets/css/detalle/tabcontent_docs.css" rel="stylesheet" type="text/css" />
+    <script src="../assets/js/detalle/tabcontent.js" type="text/javascript"></script>
+</head>
+
+<div align="center">
+    <table width=100% height=100%>
+        <tr height=20%>
+            <td width="40%" valign="top">
+                <table class="eti">
+                <?php
+                                if ($ColumnasModulosDetalle['exitoso'] && count($ColumnasModulosDetalle['resultado']) > 0) {
+                                    foreach ($ColumnasModulosDetalle['resultado'] as $row) {
+                                        $area='A';
+                                        if($row['area']== $area){
+                                ?>
+                                    <tr>
+                                        <td><?php echo $row['nombre']; ?></td>
+                                        <td><input type="text" id="cab" size="<?php echo $row['nombre']; ?>" value="<?php if (isset($row['format_text']) && $row['format_text'] == 'number_format') {
+                                                echo number_format($detalleConsulta[$row['nombre']], 2);
+                                            } else {
+                                                    echo $detalleConsulta[$row['nombre']];
+                                            }
+                                            if (isset($row['concat']) && $row['format_text'] != '' ) echo $row['concat'];
+                                        ?>" disabled></td>
+                                    </tr>
+                                <?php
+                                        }
+                                    }
+                                }
+                                ?>
+                </table>
+            </td>
+
+            <td width="20%">
+
+            </td>
+            <td width="40%" align="right" valign="top">
+                <table class="eti">
+                <?php
+                                if ($ColumnasModulosDetalle['exitoso'] && count($ColumnasModulosDetalle['resultado']) > 0) {
+                                    foreach ($ColumnasModulosDetalle['resultado'] as $row) {
+                                        $area='B';
+                                        if($row['area']== $area){
+                                ?>
+                                    <tr>
+                                        <td><?php echo $row['nombre']; ?></td>
+                                        <td><input type="text" id="cab" size="<?php echo $row['nombre']; ?>" value="<?php if (isset($row['format_text']) && $row['format_text'] == 'number_format') {
+                                                echo number_format($detalleConsulta[$row['nombre']], 2);
+                                            } else {
+                                                    echo $detalleConsulta[$row['nombre']];
+                                            }
+                                            if (isset($row['concat']) && $row['format_text'] != '' ) echo $row['concat'];
+                                        ?>" disabled></td>
+                                    </tr>
+                                <?php
+                                        }
+                                    }
+                                }
+                                ?>
+                </table>
+            </td>
+
+
+        </tr>
+        <tr height=40% valign="top">
+
+            <td colspan=3 style="background-color:#FFFFFF; border: black 1px solid;">
+                <ul class="tabs" style="background-image: url(./style/fa.png);">
+                    <li><a href="#view1">Contenido</a></li>
+                    <li><a href="#view2">Logistica</a></li>
+                    <li><a href="#view3">Finanzas</a></li>
+                </ul>
+                <div class="tabcontents">
+                    <div id="view1">
+                        <table class="detalle">
+                        <thead>
+                            <tr>
+                                <?php
+                                if ($ColumnasModulosUsuario['exitoso'] && count($ColumnasModulosUsuario['resultado']) > 0) {
+                                    foreach ($ColumnasModulosUsuario['resultado'] as $row) {
+                                ?>
+                                        <th class="text-center" style="width: <?php
+                                                                                if (isset($row['col_width'])) {
+                                                                                    echo $row['col_width'];
+                                                                                }
+                                                                                ?>">
+                                            <?php echo $row['nombre']; ?>
+                                        </th>
+
+                                <?php
+                                    }
+                                }
+                                ?>
+                            </tr>
+                        </thead>
+                            <tbody>
+                            <?php
+                    if ($GetReport['exitoso'] && count($GetReport['resultado']) > 0) {
+                        foreach ($GetReport['resultado'] as $rowSQL) {
+                    ?>
+                            <tr>
+                                <?php
+                                if ($ColumnasModulosUsuario['exitoso'] && count($ColumnasModulosUsuario['resultado']) > 0) {
+                                    foreach ($ColumnasModulosUsuario['resultado'] as $row) {
+                                        $nombreColumna = $row['nombre'];
+                                ?>
+                                        <td style="width: <?php
+                                                            if (isset($row['col_width'])) {
+                                                                echo $row['col_width'];
+                                                            }
+                                                            ?>" class="<?php
+                                                    if (isset($row['align']) && $row['align'] != '') {
+                                                        echo $row['align'];
+                                                    }
+                                                    ?>">
+                                            <?php
+                                            if (isset($row['format_text']) && $row['format_text'] == 'number_format') {
+                                                echo number_format($rowSQL[$nombreColumna], 2);
+                                            } else {
+                                                    echo $rowSQL[$nombreColumna];
+                                            }
+                                            if (isset($row['concat']) && $row['format_text'] != '' ) echo $row['concat'];
+                                            ?>
+
+
+
+                                        </td>
+                                <?php
+                                    }
+                                }
+                                ?>
+                            </tr>
+                    <?php
+                        }
+                    } else {
+                        echo 'Sin información';
+                    }
+                    ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="view2">                        
+                    </div>
+                    <div id="view3">                        
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr height=30%>
+            <td width="50%" colspan=2 valign="top">
+                <table>
+                <?php
+                                if ($ColumnasModulosDetalle['exitoso'] && count($ColumnasModulosDetalle['resultado']) > 0) {
+                                    foreach ($ColumnasModulosDetalle['resultado'] as $row) {
+                                        $area='C';
+                                        if($row['area']== $area){
+                                ?>
+                                    <tr>
+                                        <td><?php echo $row['nombre']; ?></td>
+                                        <td>
+                                            <?php  if($row['col_0']== 'input') { ?>
+                                            <input type="text" id="cab" size="<?php echo $row['nombre']; ?>" value="<?php if (isset($row['format_text']) && $row['format_text'] == 'number_format') {
+                                                echo number_format($detalleConsulta[$row['nombre']], 2);
+                                            } else {
+                                                    echo $detalleConsulta[$row['nombre']];
+                                            }
+                                            if (isset($row['concat']) && $row['format_text'] != '' ) echo $row['concat'];
+                                        ?>" disabled>
+
+                                    <?php  } else {?>
+                                    <textarea rows="7" cols="30"> <?php echo  $detalleConsulta[$row['nombre']]; ?> </textarea> 
+                                    <?php  } ?>   
+                                    </td>
+                                    </tr>
+                                <?php
+                                        }
+                                    }
+                                }
+                                ?>
+                </table>
+            </td>
+            <td width="50%" valign="top" align="right">
+                <table class="eti">
+                <?php
+                                if ($ColumnasModulosDetalle['exitoso'] && count($ColumnasModulosDetalle['resultado']) > 0) {
+                                    foreach ($ColumnasModulosDetalle['resultado'] as $row) {
+                                        $area='D';
+                                        if($row['area']== $area){
+                                ?>
+                                    <tr>
+                                        <td><?php echo $row['nombre']; ?></td>
+                                        <td><input type="text" id="cab" size="<?php echo $row['nombre']; ?>" value="<?php if (isset($row['format_text']) && $row['format_text'] == 'number_format') {
+                                                echo number_format($detalleConsulta[$row['nombre']], 2);
+                                            } else {
+                                                    echo $detalleConsulta[$row['nombre']];
+                                            }
+                                            if (isset($row['concat']) && $row['format_text'] != '' ) echo " ". $row['concat'];
+                                        ?>" disabled></td>
+                                    </tr>
+                                <?php
+                                        }
+                                    }
+                                }
+                                ?>
+                </table>
+            </td>
+        </tr>
+    </table>
+    </tbody>
+    </table>
+    <script type="text/javascript">
+        var Opciones = Array("Contenido", "Logistica", "Finanzas")
+        initTabs("Tab", Opciones, 0, "", "");
+    </script>
+</div>
+</html>
+
+<?php
 }
 ?>
-<html>
-    <head>
-        <title>PEDIDO</title>
-    </head>
-    <link rel="stylesheet" type="text/css" href="style/spn.css" />
-    <link href="style/tabcontent_docs.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="js/tab-view.js"></script>
-    <script src="js/jquery.min.js" type="text/javascript"></script>
-    <script src="js/tabcontent.js" type="text/javascript"></script>
-
-    <script type="text/javascript">
-        $(document).ready(function() {
-            $('.tbl').fixedtableheader({
-                headerrowsize: 1}
-            );
-        }
-        );
-    </script>
-
-    <div align="center">
-        <?php
-        $DOC = $_GET['nsap'];
-
-	
-
-
-
-        $query_det = "Select TOP 1 
-       CV.DocNum Entrega,
-       CASE When CV.Series = 45 Then 'FACTURA' Else 'REMISION' END Tipo,
-       DV.TrgetEntry  Factura_N,
-       CV.DocDate FechaContabilizacion,
-       CV.DocDueDate FechaValido,
-       CV.CreateDate FechaCreacion,	   
-       CV.CardCode Ccliente,
-       CV.CardName Cliente,
-       Convert(varchar(254),DM.AliasName) ClienteF,
-       VD.SlpName Vendedor,
-       DV.ItemCode Material,
-       DV.Dscription Descripcion,
-       DV.Quantity M2,
-       CASE WHEN DV.Currency = 'MXP' THEN DV.Price/TC.Rate ELSE DV.Price END Pu,
-       CASE WHEN DV.Currency = 'MXP' THEN DV.LineTotal/TC.Rate ELSE DV.TotalFrgn END Subtotal,
-       DV.LineVatS Iva,
-       CASE WHEN DV.Currency = 'MXP' THEN (DV.LineTotal/TC.Rate)+DV.LineVatS ELSE DV.TotalFrgn+DV.LineVatS END Total,
-       CV.U_Soporte_doc Soporte,
-	   DV.DiscPrcnt descuento,
-       CV.Project obra,
-       CV.DiscPrcnt descuento_documento,
-	   CV.NumAtCard referencia,
-	   DV.Currency moneda,
-	   CV.Comments
-  FROM QUT1 DV
-  JOIN OQUT CV ON DV.DocEntry = CV.DocEntry
-  Join ORTT TC ON CV.DocDate = TC.RateDate AND TC.Currency = 'USD'
-  Left Join OSLP VD On CV.SlpCode = VD.SlpCode
-  Left Join OCRD DM On  CV.CardCode =  DM.CardCode
- WHERE CV.DocStatus = 'O' And CV.DocNum=?
- Order By CV.DocNum";
-
-    $params = array($DOC);
-    
-    $result = sqlsrv_query($conn, $query_det, $params);
-   
-    
-    if( $result === false ) {
-     die( print_r( sqlsrv_errors(), true));
-    }    else {
-
-            // CReacion de la Tabla HTML apartir de Consulta
-            $row = sqlsrv_fetch_array($result);
-            echo '
-				<table width=100% height=100% >
-					<tr height=20%>
-						<td width="40%" valign="top">
-							<table class="eti">
-								<tr><td>Cliente:</td><td><input type="text" id="cab" size="30" value="' . $row['Ccliente'] . '" disabled></td></tr>
-		        			   <tr><td>Nombre:</td><td><input type="text" id="cab" size="30" value="' . $row['Cliente'] . '" disabled></td></tr>
-								<tr><td>Referencia:</td><td><input type="text" id="cab" size="25" value="' . $row['referencia'] . '" disabled></td></tr>
-								<tr><td>Moneda:</td><td><input type="text" id="cab" size="6" value="' . $row['moneda'] . '" disabled><input type="text" id="cab" size="6" value="' . $row['TC']. '" disabled></td></tr>
-							</table>
-						</td>
-						
-						<td width="20%">
-							
-						</td>
-						<td width="40%" align="right" valign="top">
-							<table class="eti">
-								<tr><td>Numero:</td><td><input type="text" id="cab" size="10" value="' . $row['Entrega'] . '" disabled></td></tr>
-                                                                <tr><td>Fecha de Contabilizacion:</td><td><input type="text" id="cab" size="10" value="' . date_format(date_create($row['FechaContabilizacion']->format('Y-m-d')), "d/m/Y") . '" disabled></td></tr>
-								<tr><td>Fecha de Vencimiento:</td><td><input type="text" id="cab" size="10" value="' . date_format(date_create($row['FechaValido']->format('Y-m-d')), "d/m/Y") . '" disabled></td></tr>
-								<tr><td>Fecha de Documento:</td><td><input type="text" id="cab" size="10" value="' . date_format(date_create($row['FechaCreacion']->format('Y-m-d')), "d/m/Y") . '" disabled></td></tr>
-								
-							</table>
-						</td>
-
-							
-					</tr>
-					<tr height=40% valign="top">
-						
-						<td colspan=3 style="background-color:#FFFFFF; border: black 1px solid;">
-							<ul class="tabs" style="background-image: url(./style/fa.png);">
-										 <li><a href="#view1">Contenido</a></li>
-										 <li><a href="#view2">Logistica</a></li>
-										 <li><a href="#view3">Finanzas</a></li>
-									</ul>
-									<div class="tabcontents">
-									    <div id="view1">
-							<table class="detalle"> 
-							<thead>';
-
-            echo'
-								<th width="15%">Articulo</th>
-								<th width="30%">Descripcion del Articulo</th>
-								<th width="5%">Cantidad Pedido</th>
-                                                                <th width="5%">Precio por unidad</th>
-                                                                <th width="5%">% de descuento</th>
-                                                                <th width="5%">Indicador de impuesto</th>
-							</thead>
-							<tbody >';
-
-            $query_detallado = "Select
-       CV.DocNum Entrega,
-       CASE When CV.Series = 45 Then 'FACTURA' Else 'REMISION' END Tipo,
-       DV.TrgetEntry  Factura_N,
-       CV.DocDate FechaContabilizacion,
-	   CV.DocDueDate FechaValido,
-	   CV.CreateDate FechaCreacion,	   
-       CV.CardCode Ccliente,
-       CV.CardName Cliente,
-       Convert(varchar(254),DM.AliasName) ClienteF,
-       VD.SlpName Vendedor,
-       DV.ItemCode Material,
-       DV.Dscription Descripcion,
-       DV.Quantity M2,
-       CASE WHEN DV.Currency = 'MXP' THEN DV.Price/TC.Rate ELSE DV.Price END Pu,
-       CASE WHEN DV.Currency = 'MXP' THEN DV.LineTotal/TC.Rate ELSE DV.TotalFrgn END Subtotal,
-       DV.LineVatS Iva,
-       CASE WHEN DV.Currency = 'MXP' THEN (DV.LineTotal/TC.Rate)+DV.LineVatS ELSE DV.TotalFrgn+DV.LineVatS END Total,
-       CV.U_Soporte_doc Soporte,
-	   DV.DiscPrcnt descuento,
-       CV.Project obra,
-       CV.DiscPrcnt descuento_documento,
-	   CV.NumAtCard referencia,
-	   DV.Currency moneda,
-	   CV.Comments,
-	   DV.TaxCode
-  FROM QUT1 DV
-  JOIN OQUT CV ON DV.DocEntry = CV.DocEntry
-  Join ORTT TC ON CV.DocDate = TC.RateDate AND TC.Currency = 'USD'
-  Left Join OSLP VD On CV.SlpCode = VD.SlpCode
-  Left Join OCRD DM On  CV.CardCode =  DM.CardCode
- WHERE CV.DocStatus = 'O' And CV.DocNum=?;";
-            $params2 = array($DOC);
-            $grid = sqlsrv_query($conn, $query_detallado, $params2);
-            
-            
-            if( $result === false ) {
-             die( print_r( sqlsrv_errors(), true));
-            }   
-            while ($row2 = sqlsrv_fetch_array($grid)) {
-                echo'	
-			<tr>';
-                    echo '
-                        <td style="text-align:left;">' . $row2['Material'] . '</td>
-                        <td style="text-align:left;">' . $row2['Descripcion'] . '</td>
-                        <td>' . number_format(round((int)$row2['M2'], 2), 2) . '</td>
-                        <td>' . number_format(round((int)$row2['Pu'], 2), 2) . '</td>
-                        <td> &nbsp;&nbsp;&nbsp; ' . number_format(round((int)$row2['descuento'], 2), 2) . ' %</td>
-                        <td>' . $row2['TaxCode'] . '</td>';
-                echo '</tr>';
-            }; // While
-            echo '</tbody></table>
-                             </div>
-                        <div id="view2">
-                            content 2
-                        </div>
-                        <div id="view3">
-                            content 3
-                        </div>
-                    </div>
-						
-						</td>
-							
-					</tr>	
-					<tr height=30%>
-						<td width="50%" colspan=2 valign="top">
-							<table>
-								<tr><td>Vendedor:</td><td><input type="text" id="codigo" size="30" value="' . $row['Vendedor'] . '" disabled></td></tr>
-		        			   <tr><td valign="top">Comentarios:</td><td><textarea rows="5" cols="24">' . $row['Comments'] . '</textarea></td></tr>
-							</table>
-						</td>
-
-						<td width="50%" valign="top" align="right">
-							<table class="eti">
-								<tr><td>Total antes del descuento:</td><td><input type="text" id="tot" size="10" value="' . number_format(round((int)$row['Subtotal'], 2), 2) . '" disabled></td></tr>
-		        			                <tr><td>Descuento:  ' . number_format(round((int)$row['descuento_documento'], 2), 2) . ' %</td><td><input type="text" id="tot" size="10" value="' . number_format(round(($row['descuento_documento'] * $row['Subtotal']), 2), 2) . '" disabled></td></tr>
-								
-								<tr><td>Impuesto:</td><td><input type="text" id="tot" size="10" value="' . number_format(round((int)$row['Iva'], 2), 2) . '" disabled></td></tr>
-								<tr><td>Total del Documento:</td><td><input type="text" id="tot" size="10" value="' . number_format(round((int)$row['Total'], 2), 2) . '" disabled></td></tr>
-								
-							</table>
-						</td>
-					</tr>
-				</table>';
-        } //Consulta SQL
-//} //sesion
-//else{
-//	session_destroy();
-//	Header("Location: index.php");
-//	}
-        ?>
-
-    </tbody>
-
-</table>
-<script type="text/javascript">
-
-    var Opciones = Array("Contenido", "Logistica", "Finanzas")
-    initTabs("Tab", Opciones, 0, "", "");
-
-</script>
-
-</div>
-
-</html>

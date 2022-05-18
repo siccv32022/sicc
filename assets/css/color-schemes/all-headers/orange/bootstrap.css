@@ -39,10 +39,10 @@
   --bs-dark: #2b2b2a;
   --bs-primary-rgb: 226, 147, 12;
   --bs-secondary-rgb: 38, 166, 154;
-  --bs-success-rgb: 139, 195, 74;
+  --bs-success-rgb: 169, 245, 169;
   --bs-info-rgb: 3, 169, 244;
-  --bs-warning-rgb: 255, 179, 0;
-  --bs-danger-rgb: 223, 86, 69;
+  --bs-warning-rgb: 243, 247, 129;
+  --bs-danger-rgb: 245, 169, 188;
   --bs-light-rgb: 239, 238, 237;
   --bs-dark-rgb: 43, 43, 42;
   --bs-white-rgb: 255, 255, 255;
