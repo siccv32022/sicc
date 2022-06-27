@@ -62,4 +62,51 @@ class Reportes
         
         return $resultado;
     }
+
+    public function  getReportFilterFour($id){
+        $resultado = array();
+        $resultado['exitoso'] = true;
+        try {            
+            $obj_conecion = new ConexionPDOSQL('sqlsrv');       
+            $query=$this->getQuery();
+            $parameter=[$id,$id,$id,$id]; 
+            $result = $obj_conecion->ejecutarSentenciaPreparada($query,$parameter);
+            if(!$result['exitoso'] || empty($result['exitoso'])){
+                $resultado['exitoso'] = false;
+            }
+            if($resultado['exitoso']){
+                $resultado['resultado'] = $result['resultado']; 
+            }
+                    
+        } catch (Exception $fallo) {
+            $resultado['exitoso'] = false;
+            $resultado['mensaje'] = 'Fallo en la conexion PDO';
+            echo $fallo->getMessage();
+        }
+        
+        return $resultado;
+    }
+
+    public function  getReportFilterTen($id){
+        $resultado = array();
+        $resultado['exitoso'] = true;
+        try {            
+            $obj_conecion = new ConexionPDOSQL('sqlsrv');       
+            $query=$this->getQuery();
+            $parameter=[$id,$id,$id,$id,$id,$id,$id,$id,$id,$id]; 
+            $result = $obj_conecion->ejecutarSentenciaPreparada($query,$parameter);            
+            if(!$result['exitoso'] || empty($result['exitoso'])){
+                $resultado['exitoso'] = false;
+            }
+            if($resultado['exitoso']){
+                $resultado['resultado'] = $result['resultado']; 
+            }                    
+        } catch (Exception $fallo) {
+            $resultado['exitoso'] = false;
+            $resultado['mensaje'] = 'Fallo en la conexion PDO';
+            echo $fallo->getMessage();
+        }
+        
+        return $resultado;
+    }
 }
